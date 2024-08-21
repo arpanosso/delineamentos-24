@@ -34,8 +34,10 @@ data_set %>%
   scale_fill_viridis_d() +
   labs(fill="",y="Produção da Cana (TCH)")
 
+data_set
 
-
+# Salvando o banco de dados arrumado
+write_rds(data_set,"data/aula2.rds")
 
 
 

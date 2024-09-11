@@ -41,4 +41,8 @@ write_rds(data_set,"data/aula2.rds")
 
 
 
-
+# Faxina para aula3
+data_set <- read_xlsx("data-raw/aula3.xlsx") %>%
+  janitor::clean_names()
+# Salvando o banco de dados arrumado
+write_rds(data_set,"data/aula4.rds")

@@ -27,7 +27,11 @@ data_set %>%
     QMtr = SQtr/GLtr,
     QMr = SQr/GLr,
     Ftr = QMtr/QMr,
-    r2 = SQtr/SQtotal
+    r2 = SQtr/SQtotal,
+    dp = sqrt(QMr),
+    media_g = G/(I*J),
+    cv = 100*dp/media_g,
+    epm = sqrt(QMr/J)
   ) %>% t() %>%
   round(.,2)
 
@@ -36,8 +40,39 @@ modelo <- aov(y ~ trat,
               data = data_set)
 anova(modelo)
 
+data_set %>%
+  group_by(trat) %>%
+  summarise(
+    medias = mean(y)
+  ) %>%
+  ggplot(aes(x=trat, y=medias)) +
+  geom_col(fill="gray", color="black")
+
+data_set %>%
+  group_by(trat) %>%
+  summarise(
+    medias = mean(y)
+  ) %>% arrange(desc(medias))
 
 # Fazer Procedimento Para Comparação de Médias
 # Realizar o teste t-Student
+library(agricolae)
+trat <- data_set %>% pull(trat)
+y <- data_set %>% pull(y)
+LSD.test(y,trat,28,2.757,
+         console = TRUE)
 
 # Realizar o teste de Tukey
+HSD.test(y,trat,28,2.757,
+         console = TRUE)
+plot(TukeyHSD(modelo, conf.level=.95), las = 2)
+## Utilizando o pacote ExpDes.pt
+library(ExpDes.pt)
+dic(trat,y)
+
+
+
+
+
+
+

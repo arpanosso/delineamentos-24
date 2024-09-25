@@ -1,20 +1,20 @@
 # AULA 5 - 25/09/2024, Programado por SEU NOME
 # Carregando pacotes
 library(tidyverse)
-library(ExpDes.pt)
 
 ## Entrada de dados
 data_set <- read_rds("data/aula5.rds")
 data_set
 
-# caso 1: Sem informação prévia sobre os trat;
+# caso 1: Sem informação prévia sobre trats;
 ## Anova pelo ExpDes
-trat <- data_set %>% pull(trat)
+trat <- data_set %>% pull(trat) %>% as_factor()
 y <- data_set %>% pull(resp)
-
-dic(trat, y, quali = TRUE, mcomp = "tukey",
-    sigT = 0.05, sigF = 0.05)
-
+modelo <- aov(y ~ trat)
+anova(modelo)
+agricolae::HSD.test(modelo,"trat",
+                    group = TRUE,
+                    console = TRUE)
 
 # caso 2: com duas origens ou acessos;
 contrasts(trat)
@@ -30,25 +30,25 @@ contrastes_01 <- cbind(
 contrasts(trat) <- contrastes_01
 contrasts(trat)
 
-#Definição do novo modelo para o desdobramento dos graus de liberdade
-modelo_01<-aov(y~trat)
+# Definição do novo modelo para o desdobramento dos graus
+# de liberdade de tratamentos
+modelo_01 <- aov(y ~ trat)
 summary(modelo_01,
-        split= list(trat=
+        split = list(trat=
                       list("origem A vs origem B"= 1,
                            "trat dentro da origem A"= 2,
                            "trat dentro da origem B"= 3)))
 
-
-
-# Ou podemos criar as variáveis auxiliáres.
-a4 <- aula4 %>%
-  mutate(
-    origem = ifelse(origem=="A",-1,1),
-    OdA = ifelse(trat==1,-1,ifelse(trat==2,1,0)),
-    OdB = ifelse(trat==3,-1,ifelse(trat==4,1,0))
-  )
-model <- lm(resp ~ origem + OdA + OdB, data=a4)
-anova(model)
+# Criando as variáveis auxiliáres.
+modelo_01_1 <- lm(resp ~ Origem + OdA + OdB,
+            data = data_set %>%
+              mutate(
+                Origem = ifelse(origem == "A",-1,1),
+                OdA = ifelse(trat==1,-1,ifelse(trat==2,1,0)),
+                OdB = ifelse(trat==3,-1,ifelse(trat==4,1,0))
+              )
+)
+anova(modelo_01_1)
 
 # caso 3: com uma testemunha;
 contrasts(trat)
@@ -74,14 +74,14 @@ summary(modelo_02,
 
 
 # ou utilizando variáveis auxiliares
-a4 <- aula4 %>%
-  mutate(
-    TestVsNovo = ifelse(trat==1,-1,1),
-    OdNovo = ifelse(trat==2,-2,ifelse(trat==1,0,-1)),
-    TratdOb = ifelse(trat==3,-1,ifelse(trat==4,1,0))
-  )
-model <- lm(resp ~ TestVsNovo + OdNovo + TratdOb, data=a4)
-anova(model)
+modelo_02_1 <- lm(resp ~ TestVsNovo + OdNovo + TratdOb,
+            data=data_set %>%
+              mutate(
+                TestVsNovo = ifelse(trat==1,-1,1),
+                OdNovo = ifelse(trat==2,-2,ifelse(trat==1,0,1)),
+                TratdOb = ifelse(trat==3,-1,ifelse(trat==4,1,0))
+              ))
+anova(modelo_02_1)
 
 # caso 4: dialelos ou fatorial;
 contrasts(trat)
@@ -107,8 +107,9 @@ summary(modelo_03,
 
 
 ## Ou simplesmente
-model <- lm(resp ~ mae*pai, data=aula4)
-anova(model)
+modelo_03_1 <- lm(resp ~ mae*pai, data=
+              data_set)
+anova(modelo_03_1)
 
 # caso 5: ajuste de regressão
 contrasts(trat)
@@ -133,5 +134,5 @@ summary(modelo_04,
                            "cúbico"= 3)))
 
 # analise de regressão
-dic(trat, y, quali=FALSE)
+ExpDes.pt::dic(trat, y, quali=FALSE)
 

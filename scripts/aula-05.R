@@ -77,7 +77,7 @@ summary(modelo_02,
 modelo_02_1 <- lm(resp ~ TestVsNovo + OdNovo + TratdOb,
             data=data_set %>%
               mutate(
-                TestVsNovo = ifelse(trat==1,-1,1),
+                TestVsNovo = ifelse(trat==1,-3,1),
                 OdNovo = ifelse(trat==2,-2,ifelse(trat==1,0,1)),
                 TratdOb = ifelse(trat==3,-1,ifelse(trat==4,1,0))
               ))

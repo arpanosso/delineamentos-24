@@ -50,3 +50,12 @@ data_set <- readxl::read_xlsx("data-raw/aula4.xlsx") %>%
   janitor::clean_names()
 # Salvando o banco de dados arrumado
 write_rds(data_set,"data/aula5.rds")
+
+
+# Faxina para aula4
+data_set <- readxl::read_xlsx("data-raw/aula6-varias-variaveis.xlsx") %>%
+  janitor::clean_names() %>%
+  select(macrofita:al)
+glimpse(data_set)
+# Salvando o banco de dados arrumado
+write_rds(data_set,"data/aula6-01.rds")

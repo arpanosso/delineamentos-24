@@ -1,0 +1,107 @@
+---
+title: "AULA-06"
+author: "RAFAEL"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      error = FALSE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# Análise para varias variáveis
+## Entrada de dados
+```{r}
+library(tidyverse)
+data_set <- read_rds("../data/aula6-01.rds")
+glimpse(data_set)
+```
+
+**DICA**:PARA COLOCAR NEGRITO, COLOQUE A PALAVRA ENTRE 4 ASTERISCOS
+
+*DICA*: PARA COLOCAR EM ITÁLICO, COLOQUE A PALAVRA ENTRE DOIS ASTERISCOS
+
+## Selecionar os nomes das variáveis
+```{r}
+variaveis <- data_set %>% 
+  select(mo:al) %>% 
+  names()
+variaveis
+```
+
+## Fazer análise para todas as variáveis
+```{r,echo=FALSE,eval=FALSE}
+for(i in seq_along(variaveis)){
+  my_var <- variaveis[i]
+  macrofitas <- data_set %>% pull(macrofita)
+  doses <- data_set %>% pull(dose_t_ha)
+  y <- data_set %>% pull(my_var)
+  print("------------------")
+  print(my_var)
+  print("------------------")
+  media <- mean(y,na.rm=TRUE)
+  desv_pad <- sd(y,na.rm = TRUE)
+  cat("Média:",round(media,2),"\n")
+  cat("Desvio-padrão:",round(desv_pad,2),"\n")
+  
+  # Gráfico de histograma
+  plot_hist <- tibble(macrofitas,doses,y) %>% 
+    ggplot(aes(x=y))+
+    geom_histogram(bins = 7,fill="grey",colour="black")+
+    theme_bw()+
+    labs(x=my_var)
+  print(plot_hist)
+  
+  # Análise de variância
+  ExpDes.pt::fat2.dic(macrofitas,doses,y,
+                      sigF = 0.15,sigT = 0.05,
+                      mcomp = "tukey",
+                      quali = c(TRUE,FALSE),
+                      fac.names = c("macro","dose"))
+  
+}
+```
+
+## Modelo do matemático do experimento fatorial em DIC
+$$
+y_{ij}=\mu + \tau_{i} + \beta_{j} + (\tau \beta_{ij})_{k} + \epsilon_{ijk}
+$$
+
+## Quadro da análise de variância
+FV|GL
+:---|:---:
+A| $(a-1)$
+B| $(b-1)$
+AB| $(a-1)(b-1)$
+R| $ab(r-1)$
+**T**| $abr-1$
+
+## Adição da imagem do prédio central
+![](../img/01.jpg)
+
+## Gráfico interativo
+```{r}
+library(plotly)
+graf <- data_set %>% 
+  group_by(dose_t_ha,macrofita) %>% 
+  summarise(mo=mean(mo)) %>% 
+  ggplot(aes(x=dose_t_ha,y=mo,fill = macrofita))+
+  geom_col(position = "dodge",colour="black")+
+  theme_bw()+
+  scale_fill_viridis_d()
+ggplotly(graf)
+
+```
+
+## Mind blowing
+![](https://media.tenor.com/Oc4nf8N08jIAAAAM/mind-blow-galaxy.gif)
+
+![](https://media.tenor.com/DkLuqx5rQcUAAAAM/cat.gif)
+
+## Referência
+### [rcookbook](https://bookdown.org/yihui/rmarkdown-cookbook/)
+
+

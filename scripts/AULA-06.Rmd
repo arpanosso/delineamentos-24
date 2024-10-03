@@ -20,6 +20,13 @@ data_set <- read_rds("../data/aula6-01.rds")
 glimpse(data_set)
 ```
 
+## Tabelas com DT
+```{r}
+library(DT)
+datatable(data_set)
+```
+
+
 **DICA**:PARA COLOCAR NEGRITO, COLOQUE A PALAVRA ENTRE 4 ASTERISCOS
 
 *DICA*: PARA COLOCAR EM ITÁLICO, COLOQUE A PALAVRA ENTRE DOIS ASTERISCOS

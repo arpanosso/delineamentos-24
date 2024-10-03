@@ -40,7 +40,7 @@ variaveis
 ```
 
 ## Fazer análise para todas as variáveis
-```{r,echo=FALSE,eval=FALSE}
+```{r, eval=FALSE}
 for(i in seq_along(variaveis)){
   my_var <- variaveis[i]
   macrofitas <- data_set %>% pull(macrofita)
@@ -103,9 +103,9 @@ ggplotly(graf)
 
 ```
 
-## Mind blowing
+## Mind blowing (meme)
 ![](https://media.tenor.com/Oc4nf8N08jIAAAAM/mind-blow-galaxy.gif)
-
+## Typing cat (meme)
 ![](https://media.tenor.com/DkLuqx5rQcUAAAAM/cat.gif)
 
 ## Referência

@@ -103,12 +103,16 @@ ggplotly(graf)
 
 ```
 
-## Mind blowing (meme)
+## Mind blowing
+
 ![](https://media.tenor.com/Oc4nf8N08jIAAAAM/mind-blow-galaxy.gif)
-## Typing cat (meme)
+
+## Typing cat
+
 ![](https://media.tenor.com/DkLuqx5rQcUAAAAM/cat.gif)
 
 ## Referência
+
 ### [rcookbook](https://bookdown.org/yihui/rmarkdown-cookbook/)
 
 

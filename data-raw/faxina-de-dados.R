@@ -67,3 +67,11 @@ data_set <- readxl::read_xlsx("data-raw/aula7-2.xlsx") %>%
 glimpse(data_set)
 # Salvando o banco de dados arrumado
 write_rds(data_set,"data/aula7-01.rds")
+
+# Faxina para aula8
+data_set <- readxl::read_xlsx("data-raw/aula8.xlsx") %>%
+  janitor::clean_names()
+
+glimpse(data_set)
+# Salvando o banco de dados arrumado
+write_rds(data_set,"data/aula8.rds")

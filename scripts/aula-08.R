@@ -2,129 +2,127 @@
 ## Interação Significativa
 ## Carregando pacotes necessários
 library(tidyverse)
-library(agricolae)
 library(ExpDes.pt)
 
-## Carregar o Banco de dados aula8.rds
-## que está na pasta "data"
-data_set <- read_rds("data/aula8.rds")
-glimpse(data_set)
+# Experimentos Fatoriais
+# Variável aleatória y - Produção do Milho (kg/parcela)
+library(tidyverse)
+y <- c(58,	45,	47, 61,	65,	47,
+       31,	35,	29, 43,	51,	49,
+       45,	55,	79, 31,	37,	37,
+       78,	83,	62, 36,	34,	34)
+hist(y)
+inseticida <- gl(4,6) # gerando o fator A
+dose <- gl(2,3,24) # gerando o fator B
+trat <- interaction(inseticida, dose)
 
-## Gráfico de interaçõe AxB
-data_set %>%
-  group_by(inseticida, dose) %>%
-  summarise(
-    media = mean(prod)
-  ) %>%
-  ggplot(aes(x=as.numeric(dose),
-             y= media,
-             color = as_factor(inseticida))) +
-  geom_point() +
-  geom_line() +
-  theme_bw()
+# gráficos da interação
+interaction.plot(inseticida, dose, y, mean)
+interaction.plot(dose, inseticida, y, mean)
 
-## Gráfico de interaçõe BxA
-data_set %>%
-  group_by(inseticida, dose) %>%
-  summarise(
-    media = mean(prod)
-  ) %>%
-  ggplot(aes(x=as.numeric(inseticida),
-             y= media,
-             color = as_factor(dose))) +
-  geom_point() +
-  geom_line() +
-  theme_bw()
-# gráfico boxplot dos tratamentos
-data_set %>%
-  mutate(
-    trat = interaction(inseticida, dose)
-  ) %>%
-  group_by(trat) %>%
-  mutate(
-    media = mean(prod)) %>%
-  ungroup() %>%
-  mutate(
-    trat = trat %>% fct_reorder(desc(media))
-  ) %>%
-  ggplot(aes(x=trat,y=prod,fill=trat)) +
-  geom_boxplot() +
-  theme_minimal()
-
-## Análise de variância
-# extraindo os fatores e a variável resposta
-inseticida <- data_set %>% pull(inseticida)
-dose <- data_set %>% pull(dose)
-y <- data_set %>% pull(prod)
-
-# criar o modelo da análise
+# Criar o modelo da anova.
 modelo <- aov(y ~ inseticida*dose)
 anova(modelo)
 
-## Análise de Pressupostos.
-# Montar o modelo no delineamento de
-# Experimento (DIC, DBC, DQL...)
-trat = interaction(inseticida,dose)
-modelo_diag <- aov(y ~ trat)
-plot(modelo_diag)
+# Desdobramento do Dose dentro de Inseticida.
+modelo_1 <- aov(y ~ inseticida/dose)
+anova(modelo_1)
 
-# Teste da Normalidade dos Resíduos
-# Extrair o Resíduos Studentzado
-rs <- rstudent(modelo_diag)
-hist(rs)
+# Para desdobrar a interação, precimos
+# olhar a posição dos inseticidas dentro
+# do vetor de efeitos (effects)
+effects(modelo_1) %>% names() %>% tibble()
 
-# Teste de normalidade
-# rejeita H0 se p-value <= 0.05
-shapiro.test(rs)
-nortest::lillie.test(rs)
-nortest::ad.test(rs)
-nortest::cvm.test(rs)
+# Observamos que o Inseticida1 está na
+# posição 1 do vetor da interação
+# inseticida1:dose2 - 1
+# inseticida2:dose2 - 2
+# inseticida3:dose2 - 3
+# inseticida4:dose2 - 4
+# Assim, precisamos dos valores 1,2,3 e 4
+# esses valores serão inseridos na lista
+# do argumento "split" da função summary
+summary(modelo_1,
+        split = list(
+          "inseticida:dose" = list(
+            "Dose:I1" = 1,
+            "Dose:I2" = 2,
+            "Dose:I3" = 3,
+            "Dose:I4" = 4
+          )
+        ))
 
-# Testes de Homogeneidade de Variâncias
-# Homocedasticidade
-# Rejeita H0 se p-value <= 0.05
-lawstat::levene.test(y,trat)
-lawstat::levene.test(y,trat,
-                     location = "mean")
-MASS::boxcox(modelo_diag)
-# não rejeita H0 se lambda = 1 pertencer
-# ao intervalo de confiança.
+# Desdobramento do Inseticida dentro da Dose.
+modelo_2 <- aov(y ~ dose/inseticida)
+anova(modelo_2)
 
-## Diagnóstico de Outliers
-y_pred <- predict(modelo_diag)
-tibble(rs, y_pred) %>%
-  ggplot(aes(x = y_pred, y=rs)) +
-  geom_point() +
-  ylim(-3.5,3.5) +
-  geom_hline(yintercept = c(-3,3),
-             color="red") +
-  theme_bw()
+# Para desdobrar a interação, precimos
+# olhar a posição dos inseticidas dentro
+# do vetor de efeitos (effects)
+effects(modelo_2) %>% names() %>% tibble()
 
-## Desdobramento da Interação
-# criar o modelo da análise
-# Desdobramento de Inseticidade dentro de dose
+# Observamos que o Dose1 está na
+# posição 1,  3 e 5 do vetor da interação
+# "dose1:inseticida2"
+# "dose2:inseticida2"
+# "dose1:inseticida3"
+# "dose2:inseticida3"
+# "dose1:inseticida4"
+# "dose2:inseticida4"
+# Assim, precisamos dos valores 1,3 e 5 para dose1
+# e os valores 2, 4 e 6 para a dose2
+# esses valores serão inseridos na lista
+# do argumento "split" da função summary
+summary(modelo_2,
+        split = list(
+          "dose:inseticida" = list(
+            "Inset:D1" = c(1,3,5),
+            "Inset:D2" = c(2,4,6)
+          )
+        ))
 
+# Análise utilizando pacote ExpDes.pt
+ExpDes.pt::fat2.dic(inseticida,dose,y)
 
+# Exercício prático
+y <- c(39.5,	41.3,	38.1,	36.0,
+       37.8,	35.6,	41.7,	35.8,
+       36.3,	36.3,	34.5,	39.3,
+       25.6,	22.0,	20.4,	25.8,
+       29.0,	24.9,	29.9,	27.1,
+       20.7,	20.3,	19.5,	17.8)
+cult <- gl(2,12)
+esp <- gl(3,4,24)
+bloco <- gl(4,1,24)
 
+# Análise de Variância
+modelo <- aov(y ~ bloco + cult*esp)
+anova(modelo)
 
+# desdobrando a interação cultivar dentro
+# espaçamento
+modelo_1 <- aov(y ~ bloco + esp/cult)
+effects(modelo_1) %>% names() %>% tibble()
+summary(modelo_1,
+        split = list(
+          "esp:cult" = list(
+            "Cult:E1" = 1,
+            "Cult:E2" = 2,
+            "Cult:E3" = 3
+          )
+        ))
+# desdobrando a interação espaçamento dentro
+# cultivar
+modelo_2 <- aov(y ~ bloco + cult/esp)
+effects(modelo_2) %>% names() %>% tibble()
+summary(modelo_2,
+        split = list(
+          "cult:esp" = list(
+            "Esp:C1" = c(1,3),
+            "Esp:C2" = c(2,4)
+          )
+        ))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Análise utilizando pacote ExpDes.pt
+ExpDes.pt::fat2.dbc(cult,esp,bloco,y,
+      fac.names = c("Cultivar","Espaçamento"))
